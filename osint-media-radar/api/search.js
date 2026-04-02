@@ -338,9 +338,20 @@ function parseRSSXml(xml) {
 }
 
 function parseItem(xml) {
+  // Extract link from various RSS formats: <link>url</link>, <link href="url"/>, <link url="url"/>
+  let link = extractTag(xml, 'link');
+  if (!link) {
+    const hrefMatch = xml.match(/<link[^>]*href=["']([^"']+)["']/i);
+    link = hrefMatch ? hrefMatch[1] : '';
+  }
+  if (!link) {
+    const urlMatch = xml.match(/<link[^>]*url=["']([^"']+)["']/i);
+    link = urlMatch ? urlMatch[1] : '';
+  }
+
   return {
     title: extractTag(xml, 'title'),
-    link: extractTag(xml, 'link'),
+    link: link,
     description: stripHtml(extractTag(xml, 'description')),
     pubDate: extractTag(xml, 'pubDate') || extractTag(xml, 'dc:date'),
     image: extractImageFromXml(xml)
